@@ -4,6 +4,19 @@
 
 	$app = new \Slim\App;
 
+	// CORS Support
+	$app->options('/{routes:.+}', function ($request, $response, $args) {
+	    return $response;
+	});
+	$app->add(function ($req, $res, $next) {
+	    $response = $next($req, $res);
+	    return $response
+	            ->withHeader('Access-Control-Allow-Origin', '*')
+	            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+	            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+	});
+
+
 	// Get All Customers
 	$app->get('/api/customers', function(Request $request, Response $response){
 		$sql = "select * from customers";
@@ -20,7 +33,7 @@
 			echo json_encode($customers);
 
 		}catch(PDOException $e){
-			echo '{"error": {"text": '.$e->getMessage().'}}';
+			echo '{"status": "error","text": "'.$e->getMessage().'"}';
 		}
 	});
 
@@ -36,12 +49,12 @@
 			$db = $db->connect();
 
 			$stmt = $db->query($sql);
-			$customer = $stmt->fetchAll(PDO::FETCH_OBJ);
+			$customer = $stmt->fetch(PDO::FETCH_OBJ);
 			$db = null;
 			echo json_encode($customer);
 			
 		}catch(PDOException $e){
-			echo '{"error": {"text": '.$e->getMessage().'}}';
+			echo '{"status": "error","text": "'.$e->getMessage().'"}';
 		}
 	});
 
@@ -76,10 +89,10 @@
 
 			$stmt->execute();
 
-			echo '{"notice": {"text": "Customer Added"}}';
+			echo '{"status":"success", "text": "Customer Added"}';
 			
 		}catch(PDOException $e){
-			echo '{"error": {"text": '.$e->getMessage().'}}';
+			echo '{"status": "error","text": "'.$e->getMessage().'"}';
 		}
 	});
 
@@ -122,10 +135,10 @@
 
 			$stmt->execute();
 
-			echo '{"notice": {"text": "Customer Updated"}}';
+			echo '{"status": "success", "text": "Customer Updated"}';
 			
 		}catch(PDOException $e){
-			echo '{"error": {"text": '.$e->getMessage().'}}';
+			echo '{"status": "error","text": "'.$e->getMessage().'"}';
 		}
 	});
 
@@ -146,9 +159,9 @@
 			$stmt = $db->prepare($sql);
 			$stmt->execute();
 
-			echo '{"notice": {"text": "Customer Deleted"}}';
+			echo '{"status": "success", "text": "Customer Deleted"}';
 			
 		}catch(PDOException $e){
-			echo '{"error": {"text": '.$e->getMessage().'}}';
+			echo '{"status": "error","text": "'.$e->getMessage().'"}';
 		}
 	});
